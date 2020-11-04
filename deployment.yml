@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gameserver-dep
+  labels:
+    app: gameserver-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gameserver
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: gameserver-core
+    spec:
+      containers:
+        - name: gameserver-core
+          imagePullPolicy: Always
+          image: repo.persiansaze.io/gameserver:latest
+          ports:
+            - containerPort: 9100
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gameserver-srv
+  labels:
+    app: gameserver-srv
+spec:
+  ports:
+    - port: 9100
+      targetPort: 9100
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app: gameserver-core
